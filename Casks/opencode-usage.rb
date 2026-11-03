@@ -22,5 +22,8 @@ cask "opencode-usage" do
   uninstall launchctl: "dev.myleshen.opencode-usage",
             quit:      "dev.myleshen.opencode-usage"
 
-  zap trash: "~/Library/Application Support/OpenCodeUsage.lock"
+  zap trash: [
+    "~/Library/Application Support/OpenCodeUsage.lock",
+    "~/Library/Preferences/dev.myleshen.opencode-usage.plist",
+  ]
 end
