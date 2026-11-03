@@ -14,15 +14,14 @@ cask "opencode-usage" do
     strategy :github_latest
   end
 
-  depends_on macos: ">= :sonoma"
+  depends_on macos: :sonoma
 
   app "OpenCodeUsage.app"
 
   # Ad-hoc signed, not notarised: without this Gatekeeper calls the app damaged
   # the first time it is opened after a quarantined download.
-  postflight do
-    system_command "/usr/bin/xattr",
-                   args: ["-dr", "com.apple.quarantine", "#{appdir}/OpenCodeUsage.app"]
+  postflight_steps do
+    run "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "/Applications/OpenCodeUsage.app"]
   end
 
   uninstall launchctl: "dev.myleshen.opencode-usage",
