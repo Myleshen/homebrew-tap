@@ -1,12 +1,18 @@
 cask "opencode-usage" do
-  version :latest
-  sha256 :no_check
+  version "1.0.15"
+  sha256 "6d9309ce937f05e9c6186cfde4694b0021d30e1cd33ef04962158c06a915c91f"
 
-  # Latest release asset: drives both install and `brew upgrade`.
-  url "https://github.com/Myleshen/mac-opencode-usage/releases/latest/download/OpenCodeUsage.zip"
+  # Pinned to the tagged asset so `brew upgrade` sees a newer version. Bump
+  # version + sha256 here for each app release; :latest would not upgrade.
+  url "https://github.com/Myleshen/mac-opencode-usage/releases/download/v#{version}/OpenCodeUsage.zip"
   name "OpenCode Usage"
   desc "Menu bar monitor for OpenCode Go usage"
   homepage "https://github.com/Myleshen/mac-opencode-usage"
+
+  livecheck do
+    url :url
+    strategy :github_latest
+  end
 
   depends_on macos: ">= :sonoma"
 
