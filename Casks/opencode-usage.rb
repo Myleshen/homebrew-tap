@@ -1,5 +1,5 @@
 cask "opencode-usage" do
-  version "1.0.17"
+  version "1.0.19"
   sha256 "0f380d52a790c5ea70ac4014b426601e3e4481e011f1914cd73d9d06e1983216"
 
   # Pinned to the tagged asset so `brew upgrade` sees a newer version. Bump
