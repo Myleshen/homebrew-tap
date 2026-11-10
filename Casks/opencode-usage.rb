@@ -1,6 +1,6 @@
 cask "opencode-usage" do
-  version "1.0.25"
-  sha256 "612dfa8eff820d6afa1649b97414c20bb31cd70c7a24502604078e68be720d78"
+  version "1.0.26"
+  sha256 "a9e8de1bdf72341ea13038006c8a3b9ac1e296844683b87395593dcec8a405af"
 
   # Pinned to the tagged asset so `brew upgrade` sees a newer version. Bump
   # version + sha256 here for each app release; :latest would not upgrade.
