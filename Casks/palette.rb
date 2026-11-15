@@ -26,18 +26,21 @@ cask "palette" do
   uninstall quit: "dev.myleshen.palette",
             login_item: "Palette"
 
-  uninstall_postflight do
-    [
-      "~/.config/palette",
-      "~/.local/state/palette",
-      "~/Library/Caches/Palette",
-      "~/Library/Preferences/dev.myleshen.palette.plist",
-      "~/Library/Saved Application State/dev.myleshen.palette.savedState",
-      "~/.hammerspoon/palette-webapps.lua",
-    ].each { |path| FileUtils.rm_rf(File.expand_path(path)) }
-
-    system_command "/usr/bin/tccutil", args: ["reset", "Accessibility", "dev.myleshen.palette"]
-    system_command "/usr/bin/tccutil", args: ["reset", "ScreenCapture", "dev.myleshen.palette"]
+  # Declarative steps, not a Ruby block, so Homebrew does not treat this cask as
+  # executable code. `delete:` is unusable for `~` paths: Homebrew runs it under
+  # sudo without expanding the tilde.
+  uninstall_postflight_steps do
+    run "/bin/rm", args: [
+      "-rf",
+      File.expand_path("~/.config/palette"),
+      File.expand_path("~/.local/state/palette"),
+      File.expand_path("~/Library/Caches/Palette"),
+      File.expand_path("~/Library/Preferences/dev.myleshen.palette.plist"),
+      File.expand_path("~/Library/Saved Application State/dev.myleshen.palette.savedState"),
+      File.expand_path("~/.hammerspoon/palette-webapps.lua"),
+    ]
+    run "/usr/bin/tccutil", args: ["reset", "Accessibility", "dev.myleshen.palette"]
+    run "/usr/bin/tccutil", args: ["reset", "ScreenCapture", "dev.myleshen.palette"]
   end
 
   caveats <<~EOS
