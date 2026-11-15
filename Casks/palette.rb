@@ -23,7 +23,7 @@ cask "palette" do
   # caches, preferences, saved state or login item left behind.
   uninstall quit: "dev.myleshen.palette",
             login_item: "Palette",
-            delete: [
+            trash: [
               "~/.config/palette",
               "~/.local/state/palette",
               "~/Library/Caches/Palette",
