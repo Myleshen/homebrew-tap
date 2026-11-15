@@ -19,27 +19,26 @@ cask "palette" do
     run "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "/Applications/Palette.app"]
   end
 
-  # A plain `brew uninstall` is a full cleanup: no config, history, database,
-  # caches, preferences, saved state or login item left behind.
+  # A plain `brew uninstall` is a full cleanup. `delete:` cannot be used here:
+  # Homebrew runs it through sudo without expanding `~`, which fails outside a
+  # terminal. This block runs as the user, so it also clears the privacy grants
+  # that macOS otherwise keeps forever.
   uninstall quit: "dev.myleshen.palette",
-            login_item: "Palette",
-            trash: [
-              "~/.config/palette",
-              "~/.local/state/palette",
-              "~/Library/Caches/Palette",
-              "~/Library/Preferences/dev.myleshen.palette.plist",
-              "~/Library/Saved Application State/dev.myleshen.palette.savedState",
-              "~/.hammerspoon/palette-webapps.lua",
-            ]
+            login_item: "Palette"
 
-  zap trash: [
-    "~/.config/palette",
-    "~/.local/state/palette",
-    "~/Library/Caches/Palette",
-    "~/Library/Preferences/dev.myleshen.palette.plist",
-    "~/Library/Saved Application State/dev.myleshen.palette.savedState",
-    "~/.hammerspoon/palette-webapps.lua",
-  ]
+  uninstall_postflight do
+    [
+      "~/.config/palette",
+      "~/.local/state/palette",
+      "~/Library/Caches/Palette",
+      "~/Library/Preferences/dev.myleshen.palette.plist",
+      "~/Library/Saved Application State/dev.myleshen.palette.savedState",
+      "~/.hammerspoon/palette-webapps.lua",
+    ].each { |path| FileUtils.rm_rf(File.expand_path(path)) }
+
+    system_command "/usr/bin/tccutil", args: ["reset", "Accessibility", "dev.myleshen.palette"]
+    system_command "/usr/bin/tccutil", args: ["reset", "ScreenCapture", "dev.myleshen.palette"]
+  end
 
   caveats <<~EOS
     Palette is free and ad-hoc signed, so it is not notarized by Apple. If macOS
@@ -53,9 +52,8 @@ cask "palette" do
     Config and providers: ~/.config/palette
     Logs: ~/.local/state/palette/palette.log
 
-    Uninstall removes that data too. macOS keeps the privacy grants, so clear
-    them by hand if you are starting over:
-      tccutil reset Accessibility dev.myleshen.palette
-      tccutil reset ScreenCapture dev.myleshen.palette
+    `brew uninstall --cask palette` removes the app, its config, history,
+    caches, preferences and login item, and resets the Accessibility and Screen
+    Recording grants, so the next install starts from nothing.
   EOS
 end
