@@ -26,26 +26,30 @@ cask "palette" do
   uninstall quit: "dev.myleshen.palette",
             login_item: "Palette"
 
-  # Reset the privacy grants while the app still exists: `tccutil reset` fails
-  # once the bundle is gone. `|| true` because a missing grant is not an error.
+  # Privacy grants can only be reset while the bundle still exists, and the app
+  # must be gone before its database and caches can be removed.
   uninstall_preflight_steps do
-    run "/bin/sh", args: ["-c", "/usr/bin/tccutil reset Accessibility dev.myleshen.palette || true"]
-    run "/bin/sh", args: ["-c", "/usr/bin/tccutil reset ScreenCapture dev.myleshen.palette || true"]
+    run "/bin/sh", args: ["-c", <<~SH]
+      /usr/bin/osascript -e 'tell application id "dev.myleshen.palette" to quit' >/dev/null 2>&1 || true
+      /bin/sleep 1
+      /usr/bin/tccutil reset Accessibility dev.myleshen.palette >/dev/null 2>&1 || true
+      /usr/bin/tccutil reset ScreenCapture dev.myleshen.palette >/dev/null 2>&1 || true
+    SH
   end
 
-  # Declarative steps, not a Ruby block, so the cask is not executable code.
-  # `delete:` cannot be used for `~` paths: Homebrew runs it under sudo without
-  # expanding the tilde.
+  # One best-effort pass, so a single stubborn path can never leave the cask
+  # half-uninstalled. `delete:` is unusable here: Homebrew runs it under sudo
+  # without expanding `~`.
   uninstall_postflight_steps do
-    run "/bin/rm", args: [
-      "-rf",
-      File.expand_path("~/.config/palette"),
-      File.expand_path("~/.local/state/palette"),
-      File.expand_path("~/Library/Caches/Palette"),
-      File.expand_path("~/Library/Preferences/dev.myleshen.palette.plist"),
-      File.expand_path("~/Library/Saved Application State/dev.myleshen.palette.savedState"),
-      File.expand_path("~/.hammerspoon/palette-webapps.lua"),
-    ]
+    run "/bin/sh", args: ["-c", <<~SH]
+      /bin/rm -rf \
+        "$HOME/.config/palette" \
+        "$HOME/.local/state/palette" \
+        "$HOME/Library/Caches/Palette" \
+        "$HOME/Library/Preferences/dev.myleshen.palette.plist" \
+        "$HOME/Library/Saved Application State/dev.myleshen.palette.savedState" \
+        "$HOME/.hammerspoon/palette-webapps.lua" 2>/dev/null || true
+    SH
   end
 
   caveats <<~EOS
