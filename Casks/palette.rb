@@ -26,9 +26,16 @@ cask "palette" do
   uninstall quit: "dev.myleshen.palette",
             login_item: "Palette"
 
-  # Declarative steps, not a Ruby block, so Homebrew does not treat this cask as
-  # executable code. `delete:` is unusable for `~` paths: Homebrew runs it under
-  # sudo without expanding the tilde.
+  # Reset the privacy grants while the app still exists: `tccutil reset` fails
+  # once the bundle is gone. `|| true` because a missing grant is not an error.
+  uninstall_preflight_steps do
+    run "/bin/sh", args: ["-c", "/usr/bin/tccutil reset Accessibility dev.myleshen.palette || true"]
+    run "/bin/sh", args: ["-c", "/usr/bin/tccutil reset ScreenCapture dev.myleshen.palette || true"]
+  end
+
+  # Declarative steps, not a Ruby block, so the cask is not executable code.
+  # `delete:` cannot be used for `~` paths: Homebrew runs it under sudo without
+  # expanding the tilde.
   uninstall_postflight_steps do
     run "/bin/rm", args: [
       "-rf",
@@ -39,8 +46,6 @@ cask "palette" do
       File.expand_path("~/Library/Saved Application State/dev.myleshen.palette.savedState"),
       File.expand_path("~/.hammerspoon/palette-webapps.lua"),
     ]
-    run "/usr/bin/tccutil", args: ["reset", "Accessibility", "dev.myleshen.palette"]
-    run "/usr/bin/tccutil", args: ["reset", "ScreenCapture", "dev.myleshen.palette"]
   end
 
   caveats <<~EOS
