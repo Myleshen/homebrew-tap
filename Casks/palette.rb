@@ -19,13 +19,26 @@ cask "palette" do
     run "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "/Applications/Palette.app"]
   end
 
-  uninstall quit: "dev.myleshen.palette"
+  # A plain `brew uninstall` is a full cleanup: no config, history, database,
+  # caches, preferences, saved state or login item left behind.
+  uninstall quit: "dev.myleshen.palette",
+            login_item: "Palette",
+            delete: [
+              "~/.config/palette",
+              "~/.local/state/palette",
+              "~/Library/Caches/Palette",
+              "~/Library/Preferences/dev.myleshen.palette.plist",
+              "~/Library/Saved Application State/dev.myleshen.palette.savedState",
+              "~/.hammerspoon/palette-webapps.lua",
+            ]
 
   zap trash: [
     "~/.config/palette",
     "~/.local/state/palette",
     "~/Library/Caches/Palette",
     "~/Library/Preferences/dev.myleshen.palette.plist",
+    "~/Library/Saved Application State/dev.myleshen.palette.savedState",
+    "~/.hammerspoon/palette-webapps.lua",
   ]
 
   caveats <<~EOS
@@ -39,5 +52,10 @@ cask "palette" do
 
     Config and providers: ~/.config/palette
     Logs: ~/.local/state/palette/palette.log
+
+    Uninstall removes that data too. macOS keeps the privacy grants, so clear
+    them by hand if you are starting over:
+      tccutil reset Accessibility dev.myleshen.palette
+      tccutil reset ScreenCapture dev.myleshen.palette
   EOS
 end
