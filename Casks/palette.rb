@@ -26,31 +26,19 @@ cask "palette" do
   uninstall quit: "dev.myleshen.palette",
             login_item: "Palette"
 
-  # Ruby blocks, not shell steps: Homebrew's step runner cannot delete these
-  # paths (EPERM) although they are plain user files.
-  uninstall_preflight do
-    system_command "/usr/bin/osascript",
-                   args:         ["-e", 'tell application id "dev.myleshen.palette" to quit'],
-                   must_succeed: false
-    sleep 1
-    system_command "/usr/bin/tccutil",
-                   args:         ["reset", "Accessibility", "dev.myleshen.palette"],
-                   must_succeed: false
-    system_command "/usr/bin/tccutil",
-                   args:         ["reset", "ScreenCapture", "dev.myleshen.palette"],
-                   must_succeed: false
-  end
+  # Everything Palette writes lives under these paths, so `brew uninstall --zap`
+  # is a full reset. A plain uninstall leaves them, like any cask.
+  uninstall quit: "dev.myleshen.palette",
+            login_item: "Palette"
 
-  uninstall_postflight do
-    [
-      "~/.config/palette",
-      "~/.local/state/palette",
-      "~/Library/Caches/Palette",
-      "~/Library/Preferences/dev.myleshen.palette.plist",
-      "~/Library/Saved Application State/dev.myleshen.palette.savedState",
-      "~/.hammerspoon/palette-webapps.lua",
-    ].each { |path| FileUtils.rm_rf(File.expand_path(path)) }
-  end
+  zap trash: [
+    "~/.config/palette",
+    "~/.local/state/palette",
+    "~/Library/Caches/Palette",
+    "~/Library/Preferences/dev.myleshen.palette.plist",
+    "~/Library/Saved Application State/dev.myleshen.palette.savedState",
+    "~/.hammerspoon/palette-webapps.lua",
+  ]
 
   caveats <<~EOS
     Palette is free and ad-hoc signed, so it is not notarized by Apple. If macOS
@@ -64,8 +52,11 @@ cask "palette" do
     Config and providers: ~/.config/palette
     Logs: ~/.local/state/palette/palette.log
 
-    `brew uninstall --cask palette` removes the app, its config, history,
-    caches, preferences and login item, and resets the Accessibility and Screen
-    Recording grants, so the next install starts from nothing.
+    Full reset before a clean install:
+      brew uninstall --cask --zap palette
+      tccutil reset Accessibility dev.myleshen.palette
+      tccutil reset ScreenCapture dev.myleshen.palette
+    The cask cannot reset the privacy grants itself; macOS only allows that with
+    tccutil, and Homebrew casks cannot run commands on uninstall.
   EOS
 end
