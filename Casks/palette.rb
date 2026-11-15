@@ -29,27 +29,27 @@ cask "palette" do
   # Privacy grants can only be reset while the bundle still exists, and the app
   # must be gone before its database and caches can be removed.
   uninstall_preflight_steps do
-    run "/bin/sh", args: ["-c", <<~SH]
-      /usr/bin/osascript -e 'tell application id "dev.myleshen.palette" to quit' >/dev/null 2>&1 || true
-      /bin/sleep 1
-      /usr/bin/tccutil reset Accessibility dev.myleshen.palette >/dev/null 2>&1 || true
-      /usr/bin/tccutil reset ScreenCapture dev.myleshen.palette >/dev/null 2>&1 || true
-    SH
+    quit = "/usr/bin/osascript -e 'tell application id \"dev.myleshen.palette\" to quit' >/dev/null 2>&1 || true"
+    tcc = [
+      "/usr/bin/tccutil reset Accessibility dev.myleshen.palette >/dev/null 2>&1 || true",
+      "/usr/bin/tccutil reset ScreenCapture dev.myleshen.palette >/dev/null 2>&1 || true",
+    ].join("; ")
+    run "/bin/sh", args: ["-c", "#{quit}; /bin/sleep 1; #{tcc}"]
   end
 
-  # One best-effort pass, so a single stubborn path can never leave the cask
-  # half-uninstalled. `delete:` is unusable here: Homebrew runs it under sudo
-  # without expanding `~`.
+  # Absolute paths, computed when the cask is read: a step's shell does not see
+  # the user's HOME. Best effort, so one stubborn path cannot leave the cask
+  # half-uninstalled.
   uninstall_postflight_steps do
-    run "/bin/sh", args: ["-c", <<~SH]
-      /bin/rm -rf \
-        "$HOME/.config/palette" \
-        "$HOME/.local/state/palette" \
-        "$HOME/Library/Caches/Palette" \
-        "$HOME/Library/Preferences/dev.myleshen.palette.plist" \
-        "$HOME/Library/Saved Application State/dev.myleshen.palette.savedState" \
-        "$HOME/.hammerspoon/palette-webapps.lua" 2>/dev/null || true
-    SH
+    paths = [
+      "~/.config/palette",
+      "~/.local/state/palette",
+      "~/Library/Caches/Palette",
+      "~/Library/Preferences/dev.myleshen.palette.plist",
+      "~/Library/Saved Application State/dev.myleshen.palette.savedState",
+      "~/.hammerspoon/palette-webapps.lua",
+    ].map { |path| "'#{File.expand_path(path)}'" }
+    run "/bin/sh", args: ["-c", "/bin/rm -rf #{paths.join(" ")} 2>/dev/null || true"]
   end
 
   caveats <<~EOS
