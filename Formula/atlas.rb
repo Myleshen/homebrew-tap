@@ -8,7 +8,17 @@ class Atlas < Formula
   depends_on "cmark-gfm"
   uses_from_macos "python"
 
+  # Linuxbrew does not guarantee a python3 on PATH, so depend on the formula and
+  # point the installed script's shebang at it. macOS keeps the system python.
+  on_linux do
+    depends_on "python@3.13"
+  end
+
   def install
+    if OS.linux?
+      inreplace "atlas", "#!/usr/bin/env python3", "#!#{formula_opt_bin("python@3.13")}/python3"
+    end
+
     bin.install "atlas"
   end
 
