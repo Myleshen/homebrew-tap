@@ -1,8 +1,8 @@
 class Atlas < Formula
   desc "Index every Markdown and HTML artifact under your scanned roots"
   homepage "https://github.com/Myleshen/atlas"
-  url "https://github.com/Myleshen/atlas/releases/download/v1.7.0/atlas-1.7.0.tar.gz"
-  sha256 "81f48952e35ab71a9f393a9177c346a3a88edf54d180d627c1be376e62609801"
+  url "https://github.com/Myleshen/atlas/releases/download/v1.8.0/atlas-1.8.0.tar.gz"
+  sha256 "0c3d46a6241a66ea643914c32e28623807f521dd8333381ad399b3a3729e4e7b"
   license "MIT"
 
   depends_on "cmark-gfm"
